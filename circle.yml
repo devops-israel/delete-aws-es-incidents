@@ -8,6 +8,7 @@ machine:
 dependencies:
   override:
     - docker info
+    - make deps
 
 deployment:
   master:
