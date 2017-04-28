@@ -20,7 +20,7 @@ dependencies:
 test:
   pre:
     - glide install
-    - glide update
+    # - glide update
   override:
     - go test -cover $(glide nv)
 
