@@ -4,14 +4,34 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
+    PROJECT_GOPATH: "${HOME}/.go_project"
+    PROJECT_PARENT_PATH: "${PROJECT_GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}"
+    PROJECT_PATH: "${PROJECT_PARENT_PATH}/${CIRCLE_PROJECT_REPONAME}"
+    GOPATH: "${PROJECT_GOPATH}"
+    GO15VENDOREXPERIMENT: 1
+
+dependencies:
+  cache_directories:
+    - "~/.glide"
+  pre:
+    - go get -u -v github.com/Masterminds/glide
+  override:
+    - mkdir -p "$PROJECT_PARENT_PATH"
+    - ln -sf "$HOME/$CIRCLE_PROJECT_REPONAME/" "$PROJECT_PATH"
+    - cd "$PROJECT_PATH" && glide install
+  post:
+    - go version
+    - glide -v
+
+test:
+  override:
+    - cd "$PROJECT_PATH" && go test -v $(glide novendor)
 
 deployment:
   master:
     branch: master
     commands:
       - go version
-      - go get github.com/Masterminds/glide
-      - glide install
       - go get github.com/mitchellh/gox
       - go get github.com/tcnksm/ghr
       - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
