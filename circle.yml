@@ -7,15 +7,8 @@ machine:
 
 dependencies:
   override:
-    - rm -Rf $GOPATH/src/*
     - go version
     - docker info
-    - go get -u -v github.com/Masterminds/glide
-    - go get -u -v github.com/jstemmer/go-junit-report
-    - mkdir -p $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/
-    - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME
-    - mv $HOME/$CIRCLE_PROJECT_REPONAME .
-    - cd $CIRCLE_PROJECT_REPONAME/
 
 test:
   pre:
