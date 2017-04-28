@@ -1,0 +1,14 @@
+delete-aws-es-incidents:
+  build: .
+  command: tail -f /dev/null
+  # command: dlv debug delete-aws-es-incidents -l 0.0.0.0:2345 --headless=true --log=true -- server
+  # command: dlv debug --headless --listen=:2345 --log
+  dockerfile: Dockerfile.drone
+  volumes:
+    - .:/go/src/delete-aws-es-incidents/
+  ports:
+    - "9292:9292"
+    - "2345:2345"
+  expose:
+    - "2345"
+    - "9292"

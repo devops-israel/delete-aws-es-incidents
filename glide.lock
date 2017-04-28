@@ -1,0 +1,20 @@
+hash: 67ebb0623344be5c4cdbaf26a48eea7ebe49191428d6e66228d2c5cc427e4a51
+updated: 2017-04-27T23:37:32.514246908Z
+imports:
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/spf13/cobra
+  version: 7b1b6e8dc027253d45fc029bc269d1c019f83a34
+- name: github.com/spf13/pflag
+  version: f1d95a35e132e8a1868023a08932b14f0b8b8fcb
+- name: golang.org/x/net
+  version: da118f7b8e5954f39d0d2130ab35d4bf0e3cb344
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: gopkg.in/olivere/elastic.v5
+  version: bf88a9bf9249ceb2eeddd7975edf47f3274688a0
+  subpackages:
+  - backoff
+  - uritemplates
+testImports: []
