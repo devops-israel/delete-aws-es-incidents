@@ -4,10 +4,10 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    GOROOT: ""
-    GOPATH: "${HOME}/.go_project"
-    PATH: "${GOPATH}/bin:${PATH}"
     BUILD_PATH: "${GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+    GOROOT: ""
+    GOPATH: "${BUILD_PATH}"
+    PATH: "${GOPATH}/bin:${PATH}"
 
 dependencies:
   override:
