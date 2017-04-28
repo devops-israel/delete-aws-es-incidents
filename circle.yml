@@ -4,25 +4,27 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    # PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
-    # GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
+    APP_PATH: $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+    RESULT_PATH: $CIRCLE_TEST_REPORTS/go_test
 
 dependencies:
-  pre:
+  poverridere:
     - go version
     - docker info
-    - sudo add-apt-repository ppa:masterminds/glide -y
-    - sudo apt-get update
-    - sudo apt-get install glide -y
-    # - mkdir -p ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
-    # - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    # - sudo add-apt-repository ppa:masterminds/glide -y
+    # - sudo apt-get update
+    # - sudo apt-get install glide -y
+    - go get -u -v github.com/Masterminds/glide
+    - go get -u -v github.com/jstemmer/go-junit-report
 
 test:
   pre:
-    - glide install
-    # - glide update
+    - ln -sf $HOME/$CIRCLE_PROJECT_REPONAME $APP_PATH
+    - cd $APP_PATH && glide install -v
+    - cd $APP_PATH && go build -v
   override:
-    - go test -cover $(glide nv)
+    - mkdir -p $RESULT_PATH
+    - cd $APP_PATH && go test -v -race $(glide nv) | go-junit-report > $RESULT_PATH/report.xml
 
 deployment:
   master:
