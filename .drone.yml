@@ -5,8 +5,9 @@ build:
     - SHA1=$$COMMIT
     - BUILD_NUMBER=$$BUILD_NUMBER
     - VERSION=0.0.1
+    - GITHUB_TOKEN=$$GITHUB_TOKEN
   commands:
-    - mkdir /drone/bin
+    - mkdir -p prod
     - curl https://glide.sh/get | sh
     - go get github.com/mitchellh/gox
     - go get github.com/tcnksm/ghr
@@ -14,7 +15,7 @@ build:
     - glide install
     - glide update
     - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
-    - ghr -t $$GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
+    - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
 
 publish:
   docker:
@@ -27,6 +28,7 @@ publish:
         - "latest"
     force_tag: true
     file: Dockerfile
+    context: prod/
     build_args:
       - version=$VERSION
     when:
