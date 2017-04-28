@@ -20,7 +20,7 @@
 
 package main
 
-import "delete-aws-es-incidents/cmd"
+import "./cmd"
 
 func main() {
 	cmd.Execute()
