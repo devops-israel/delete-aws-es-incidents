@@ -4,31 +4,25 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
-    PRIVATE_GOPATH: "$(echo $GOPATH | sed 's/:.*$//g')"
-    PACKAGE_NAME: "$(echo $CIRCLE_PROJECT_REPONAME | sed 's/go-//g')"
+    GOROOT: ""
+    GOPATH: "${HOME}/.go_project"
+    PATH: "${GOPATH}/bin:${PATH}"
+    BUILD_PATH: "${GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 
 dependencies:
   override:
-    - mkdir -p ~/cache "$PRIVATE_GOPATH/src/$IMPORT_PATH"
     - go version
     - docker info
     - go get -u -v github.com/Masterminds/glide
     - go get -u -v github.com/jstemmer/go-junit-report
-    - go get github.com/mattn/goveralls
-    - go get golang.org/x/tools/cmd/cover
-    - go get github.com/golang/lint/golint
-    - go get github.com/GeertJohan/fgt
-    - go get github.com/pierrre/gotestcover
+    - mkdir -p ~/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
+    - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${BUILD_PATH}
 
 test:
   pre:
-    - go vet "$IMPORT_PATH/..."
-    - fgt go fmt "$IMPORT_PATH/..."
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && glide install; exit 0
+    - glide install
   override:
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && gotestcover -coverprofile="cover.out" -race -covermode="count" -v $(glide novendor)
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && goveralls -coverprofile="cover.out" -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    - go test -cover $(glide nv)
 
 deployment:
   master:
