@@ -15,6 +15,8 @@ dependencies:
     - "~/.glide"
   pre:
     - go get -u -v github.com/Masterminds/glide
+    - go get github.com/mitchellh/gox
+    - go get github.com/tcnksm/ghr
   override:
     - mkdir -p "$PROJECT_PARENT_PATH"
     - ln -sf "$HOME/$CIRCLE_PROJECT_REPONAME/" "$PROJECT_PATH"
@@ -31,9 +33,6 @@ deployment:
   master:
     branch: master
     commands:
-      - go version
-      - go get github.com/mitchellh/gox
-      - go get github.com/tcnksm/ghr
       - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
       - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace v$VERSION dist/
 
