@@ -4,15 +4,25 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
+    PROJECT_GOPATH: "${HOME}/.go_project"
+    PROJECT_PARENT_PATH: "${PROJECT_GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}"
+    PROJECT_PATH: "${PROJECT_PARENT_PATH}/${CIRCLE_PROJECT_REPONAME}"
+    GOPATH: "${PROJECT_GOPATH}"
+    GO15VENDOREXPERIMENT: 1
 
 dependencies:
   override:
     - go version
     - docker info
+    - mkdir -p "$PROJECT_PARENT_PATH"
+    - ln -sf "$HOME/$CIRCLE_PROJECT_REPONAME/" "$PROJECT_PATH"
+    - cd "$PROJECT_PATH" && glide install
 
 test:
   override:
-    - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME && go test -cover $(glide nv)
+    - cd "$PROJECT_PATH" && go test -v $(glide novendor) 2>&1 | tee test.log
+  post:
+    - cd "$PROJECT_PATH" && mv test.log "${CIRCLE_ARTIFACTS}"
 
 deployment:
   master:
