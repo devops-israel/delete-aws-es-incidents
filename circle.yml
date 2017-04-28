@@ -8,7 +8,7 @@ machine:
     RESULT_PATH: $CIRCLE_TEST_REPORTS/go_test
 
 dependencies:
-  poverridere:
+  override:
     - go version
     - docker info
     # - sudo add-apt-repository ppa:masterminds/glide -y
