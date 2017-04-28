@@ -4,7 +4,7 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    APP_PATH: $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+    APP_PATH: $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
     RESULT_PATH: $CIRCLE_TEST_REPORTS/go_test
 
 dependencies:
