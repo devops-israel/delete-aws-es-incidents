@@ -4,8 +4,8 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    # PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
-    # GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
+    PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
+    GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
 
 dependencies:
   override:
@@ -14,15 +14,15 @@ dependencies:
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
-    # - mkdir -p ~/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
-	  # - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    - mkdir -p ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
+	  - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
 
 test:
-  pre:
-    - glide install
-    - glide update
-  # override:
-  #   - go test -cover $(glide nv)
+  # pre:
+  #   - glide install
+  #   - glide update
+  override:
+    - go test -cover $(glide nv)
 
 deployment:
   master:
