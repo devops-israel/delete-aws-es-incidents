@@ -10,8 +10,8 @@ build:
     - curl https://glide.sh/get | sh
     - go get github.com/mitchellh/gox
     - go get github.com/tcnksm/ghr
-    - go get github.com/spf13/cobra
-    - go get gopkg.in/olivere/elastic.v5
+    - glide install
+    - go get ./..
     - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
     - ghr -t $$GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
 
