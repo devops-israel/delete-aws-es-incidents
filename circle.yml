@@ -4,8 +4,10 @@ machine:
   environment:
     REPO: joshdvir/delete-aws-es-incidents
     VERSION: 0.0.1
-    IMPORT_PATH: "/home/ubuntu/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME"
+    IMPORT_PATH: "~/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}"
     APP_PATH: "$IMPORT_PATH/$CIRCLE_PROJECT_REPONAME"
+    PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
+    GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
 
 dependencies:
   override:
@@ -20,7 +22,7 @@ dependencies:
 test:
   pre:
     - mkdir -p "$IMPORT_PATH"
-    - ln -sf "$(pwd)" "$APP_PATH"
+    - ln -s "$(pwd)" "$APP_PATH"
     - cd "$APP_PATH" && glide install && glide update
   override:
     - cd "$APP_PATH" && go test -cover $(glide nv)
