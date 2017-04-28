@@ -23,8 +23,8 @@ test:
   pre:
     - glide install
     - glide update
-  override:
-    - go test -cover $(glide nv)
+  # override:
+  #   - go test -cover $(glide nv)
 
 deployment:
   master:
