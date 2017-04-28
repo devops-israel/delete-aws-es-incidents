@@ -3,7 +3,7 @@ clean:
 
 deps:
 	glide install
-	glide update --all-dependencies
+	glide update
 
 build_inside_docker:
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o delete-aws-es-incidents .
