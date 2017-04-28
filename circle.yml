@@ -15,14 +15,14 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get install glide -y
     - mkdir -p ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
-	  - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
 
-# test:
-  # pre:
-  #   - glide install
-  #   - glide update
-  # override:
-  #   - go test -cover $(glide nv)
+test:
+  pre:
+    - glide install
+    - glide update
+  override:
+    - go test -cover $(glide nv)
 
 deployment:
   master:
