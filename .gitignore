@@ -2,3 +2,5 @@ delete-aws-es-incidents
 .drone.sec.yml
 .glide/
 .DS_Store
+dist/*
+!dist/.keep
