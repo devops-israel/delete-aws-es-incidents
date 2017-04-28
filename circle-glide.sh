@@ -18,4 +18,4 @@ if [[ "$CIRCLE_BRANCH" != "master" ]]; then
 fi
 
 # Get the deps
-glide up
+glide install
