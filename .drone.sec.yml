@@ -1,6 +1,0 @@
-environment:
-  REGISTRY_USER: joshdvir
-  REGISTRY_EMAIL: shuky.dvir@gmail.com
-  REGISTRY_PASS: 3E4v9GbQg9
-  DOCKER_REPO: joshdvir/delete-aws-es-incidents
-  GITHUB_TOKEN: e18be29e59dfd7422fd9e265757d21d562010931
