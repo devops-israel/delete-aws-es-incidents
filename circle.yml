@@ -23,12 +23,12 @@ dependencies:
 
 test:
   pre:
-    - go vet "$IMPORT_PATH/$PACKAGE_NAME/..."
-    - fgt go fmt "$IMPORT_PATH/$PACKAGE_NAME/..."
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH/$PACKAGE_NAME" && glide install; exit 0
+    - go vet "$IMPORT_PATH/..."
+    - fgt go fmt "$IMPORT_PATH/..."
+    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && glide install; exit 0
   override:
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH/$PACKAGE_NAME" && gotestcover -coverprofile="cover.out" -race -covermode="count" -v $(glide novendor)
-    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH/$PACKAGE_NAME" && goveralls -coverprofile="cover.out" -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && gotestcover -coverprofile="cover.out" -race -covermode="count" -v $(glide novendor)
+    - cd "$PRIVATE_GOPATH/src/$IMPORT_PATH" && goveralls -coverprofile="cover.out" -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
 deployment:
   master:
