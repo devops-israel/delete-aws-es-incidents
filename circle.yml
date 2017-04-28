@@ -11,6 +11,8 @@ dependencies:
   override:
     - go version
     - docker info
+    - env
+    - pwd
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
@@ -19,7 +21,7 @@ test:
   pre:
     - mkdir -p "$IMPORT_PATH"
     - ln -sf "$(pwd)" "$APP_PATH"
-    - cd "$APP_PATH" && glide install
+    - cd "$APP_PATH" && glide install && glide update
   override:
     - cd "$APP_PATH" && go test -cover $(glide nv)
 
