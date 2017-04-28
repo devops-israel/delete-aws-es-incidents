@@ -1,0 +1,28 @@
+machine:
+  services:
+    - docker
+  environment:
+    REPO: joshdvir/delete-aws-es-incidents
+    VERSION: 0.0.1
+
+dependencies:
+  override:
+    - docker info
+
+deployment:
+  master:
+    branch: master
+    commands:
+      - go version
+      - go get github.com/mitchellh/gox
+      - go get github.com/tcnksm/ghr
+      - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
+      - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace v$VERSION dist/
+
+  hub:
+    branch: master
+    commands:
+      - mkdir -p prod && cp Dockerfile prod/
+      - docker build -t $REPO -f Dockerfile --build-arg version=$VERSION prod/
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push $REPO

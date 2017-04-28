@@ -21,8 +21,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strconv"
+	"sync"
 	"time"
 
 	"strings"
@@ -32,10 +35,10 @@ import (
 )
 
 var (
-	// VERSION is set while build
-	VERSION         string
 	olderThanInDays int
 	esURL           string
+	wg              sync.WaitGroup
+	ctx             context.Context
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -48,7 +51,7 @@ var RootCmd = &cobra.Command{
 			println("No Elasticsearch URL present, can't continue.")
 			os.Exit(0)
 		}
-
+		ctx = context.Background()
 		client, err := elastic.NewClient(
 			elastic.SetURL(esURL),
 			elastic.SetSniff(false),
@@ -57,17 +60,28 @@ var RootCmd = &cobra.Command{
 			panic(err)
 		}
 
-		names, err := client.IndexNames()
+		indexNames, err := client.IndexNames()
 		if err != nil {
 			panic(err)
 		}
 
-		for _, name := range names {
-			if strings.HasPrefix(name, "logstash") {
-				var date = strings.TrimPrefix(name, "logstash-")
-				fmt.Printf("%s\n", date)
+		for _, indexName := range indexNames {
+			if strings.HasPrefix(indexName, "logstash") {
+				date := strings.TrimPrefix(indexName, "logstash-")
+				dateArr := strings.Split(date, ".")
+				nowTime := time.Now()
+				indexYear, _ := strconv.Atoi(dateArr[0])
+				indexMonth, _ := strconv.Atoi(dateArr[1])
+				indexDay, _ := strconv.Atoi(dateArr[2])
+				incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
+				if daysDiff(nowTime, incidentTime) > olderThanInDays {
+					wg.Add(1)
+					go deleteIncident(ctx, client, indexName)
+				}
 			}
 		}
+
+		wg.Wait()
 	},
 }
 
@@ -85,9 +99,18 @@ func init() {
 	RootCmd.Flags().StringVarP(&esURL, "es-url", "e", "", "Elasticsearch URL, eg. https://path-to-es.aws.com/")
 }
 
-// func deleteIncidents(client) {
+func deleteIncident(ctx context.Context, client *elastic.Client, indexName string) {
+	deleteIndex, err := client.DeleteIndex(indexName).Do(ctx)
+	if err != nil {
+		fmt.Printf("Error deleting index %s\n", indexName)
+	}
 
-// }
+	if deleteIndex.Acknowledged {
+		fmt.Printf("index %s deleted.\n", indexName)
+	}
+
+	defer wg.Done()
+}
 
 func lastDayOfYear(t time.Time) time.Time {
 	return time.Date(t.Year(), 12, 31, 0, 0, 0, 0, t.Location())
