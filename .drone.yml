@@ -9,6 +9,7 @@ build:
   commands:
     - mkdir /drone/bin
     - mkdir -p prod
+    - mkdir -p dist
     - curl https://glide.sh/get | sh
     - go get github.com/mitchellh/gox
     - go get github.com/tcnksm/ghr
