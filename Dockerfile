@@ -1,6 +1,6 @@
 FROM scratch
 
-ADD delete-aws-es-incidents /delete-aws-es-incidents
+ADD delete-aws-es-incidents-linux-amd64 /delete-aws-es-incidents
 
 CMD ["-h"]
 
