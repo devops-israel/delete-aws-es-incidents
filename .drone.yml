@@ -4,7 +4,6 @@ build:
   environment:
     - SHA1=$$COMMIT
     - BUILD_NUMBER=$$BUILD_NUMBER
-    - VERSION=0.0.1
     - GITHUB_TOKEN=$$GITHUB_TOKEN
   commands:
     - mkdir /drone/bin
@@ -18,7 +17,7 @@ build:
     - glide install
     - glide update
     - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
-    - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
+    - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v0.0.1 dist/
 
 publish:
   docker:
@@ -33,6 +32,6 @@ publish:
     file: prod/Dockerfile
     context: prod/
     build_args:
-      - version=$VERSION
+      - version=0.0.1
     when:
       branch: [master]
