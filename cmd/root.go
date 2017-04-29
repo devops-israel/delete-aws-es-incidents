@@ -30,6 +30,7 @@ import (
 
 	"strings"
 
+	cron "github.com/robfig/cron"
 	"github.com/spf13/cobra"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
@@ -47,41 +48,13 @@ var RootCmd = &cobra.Command{
 	Short: "Delete ELK incidents on AWS ES 5.1",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if esURL == "" {
-			println("No Elasticsearch URL present, can't continue.")
-			os.Exit(0)
-		}
-		ctx = context.Background()
-		client, err := elastic.NewClient(
-			elastic.SetURL(esURL),
-			elastic.SetSniff(false),
-		)
-		if err != nil {
-			panic(err)
-		}
-
-		indexNames, err := client.IndexNames()
-		if err != nil {
-			panic(err)
-		}
-
-		for _, indexName := range indexNames {
-			if strings.HasPrefix(indexName, "logstash") {
-				date := strings.TrimPrefix(indexName, "logstash-")
-				dateArr := strings.Split(date, ".")
-				nowTime := time.Now()
-				indexYear, _ := strconv.Atoi(dateArr[0])
-				indexMonth, _ := strconv.Atoi(dateArr[1])
-				indexDay, _ := strconv.Atoi(dateArr[2])
-				incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
-				if daysDiff(nowTime, incidentTime) > olderThanInDays {
-					wg.Add(1)
-					go deleteIncident(ctx, client, indexName)
-				}
-			}
-		}
-
-		wg.Wait()
+		var wgm sync.WaitGroup
+		cron := cron.New()
+		cron.AddFunc("@hourly", func() { runCommand() })
+		cron.Start()
+		println("Cron run started...")
+		wgm.Add(1)
+		wgm.Wait()
 	},
 }
 
@@ -97,6 +70,46 @@ func Execute() {
 func init() {
 	RootCmd.Flags().IntVarP(&olderThanInDays, "older-than-in-days", "d", 14, "delete incidents older then in days")
 	RootCmd.Flags().StringVarP(&esURL, "es-url", "e", "", "Elasticsearch URL, eg. https://path-to-es.aws.com/")
+}
+
+func runCommand() {
+	println("Starting deleting incidents run...")
+	if esURL == "" {
+		println("No Elasticsearch URL present, can't continue.")
+		os.Exit(0)
+	}
+	ctx = context.Background()
+	client, err := elastic.NewClient(
+		elastic.SetURL(esURL),
+		elastic.SetSniff(false),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	indexNames, err := client.IndexNames()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, indexName := range indexNames {
+		if strings.HasPrefix(indexName, "logstash") {
+			date := strings.TrimPrefix(indexName, "logstash-")
+			dateArr := strings.Split(date, ".")
+			nowTime := time.Now()
+			indexYear, _ := strconv.Atoi(dateArr[0])
+			indexMonth, _ := strconv.Atoi(dateArr[1])
+			indexDay, _ := strconv.Atoi(dateArr[2])
+			incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
+			if daysDiff(nowTime, incidentTime) > olderThanInDays {
+				wg.Add(1)
+				go deleteIncident(ctx, client, indexName)
+			}
+		}
+	}
+
+	wg.Wait()
+	println("Ending deleting incidents run...")
 }
 
 func deleteIncident(ctx context.Context, client *elastic.Client, indexName string) {

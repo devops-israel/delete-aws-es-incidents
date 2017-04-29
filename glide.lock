@@ -1,8 +1,10 @@
-hash: 67ebb0623344be5c4cdbaf26a48eea7ebe49191428d6e66228d2c5cc427e4a51
-updated: 2017-04-27T23:37:32.514246908Z
+hash: a5056b5e4dd4591e54516090b27aaa3d776dcb462ae729e25dbc6424a48b49fb
+updated: 2017-04-29T08:06:15.949313144Z
 imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/robfig/cron
+  version: df38d32658d8788cd446ba74db4bb5375c4b0cb3
 - name: github.com/spf13/cobra
   version: 7b1b6e8dc027253d45fc029bc269d1c019f83a34
 - name: github.com/spf13/pflag
