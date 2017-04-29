@@ -48,6 +48,11 @@ var RootCmd = &cobra.Command{
 	Short: "Delete ELK incidents on AWS ES 5.1",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
+		if esURL == "" {
+			println("No Elasticsearch URL present, can't continue.")
+			os.Exit(0)
+		}
+
 		var wgm sync.WaitGroup
 		cron := cron.New()
 		cron.AddFunc("@hourly", func() { runCommand() })
@@ -74,10 +79,6 @@ func init() {
 
 func runCommand() {
 	println("Starting deleting incidents run...")
-	if esURL == "" {
-		println("No Elasticsearch URL present, can't continue.")
-		os.Exit(0)
-	}
 	ctx = context.Background()
 	client, err := elastic.NewClient(
 		elastic.SetURL(esURL),
