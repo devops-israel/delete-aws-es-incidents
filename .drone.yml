@@ -19,7 +19,8 @@ build:
     - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -osarch="linux/amd64 darwin/amd64"
     - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
     - cp Dockerfile prod/
-    - cp dist/delete-aws-es-incidents-linux-amd64 prod/
+    - make build_inside_docker
+    - cp delete-aws-es-incidents prod/
 
 publish:
   docker:
