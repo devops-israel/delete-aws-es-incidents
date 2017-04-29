@@ -17,7 +17,8 @@ build:
     - sed -i "s~delete-aws-es-incidents~github.com/devops-israel/delete-aws-es-incidents~g" main.go
     - glide install
     - glide update
-    - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -os="linux darwin windows" -cgo -build-toolchain
+    - gox -osarch-list
+    - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -os="linux darwin windows" -cgo
     - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
     - cp Dockerfile prod/
     - make build_inside_docker
