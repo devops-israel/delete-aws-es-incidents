@@ -17,7 +17,7 @@ build:
     - glide install
     - glide update
     - gox -osarch-list
-    - CGO_ENABLED=0 gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -os="linux darwin windows" -osarch="!darwin/arm !darwin/arm64"
+    - CGO_ENABLED=0 gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}"
     - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
     - cp Dockerfile prod/
     - make build_inside_docker
