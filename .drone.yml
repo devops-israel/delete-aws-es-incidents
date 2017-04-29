@@ -11,7 +11,7 @@ build:
     - mkdir -p prod
     - mkdir -p dist
     - curl https://glide.sh/get | sh
-    - apt-get install build-essentials
+    - apt-get update && apt-get install -y build-essentials
     - go get github.com/mitchellh/gox
     - go get github.com/tcnksm/ghr
     - sed -i "s~delete-aws-es-incidents~github.com/devops-israel/delete-aws-es-incidents~g" main.go
