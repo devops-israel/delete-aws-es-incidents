@@ -30,7 +30,7 @@ publish:
     email: $$REGISTRY_EMAIL
     repo: $$DOCKER_REPO
     tag:
-        - "$$VERSION"
+        - "v$$VERSION"
         - "latest"
     force_tag: true
     file: prod/Dockerfile
