@@ -11,12 +11,13 @@ build:
     - mkdir -p prod
     - mkdir -p dist
     - curl https://glide.sh/get | sh
+    - apt-get install build-essentials
     - go get github.com/mitchellh/gox
     - go get github.com/tcnksm/ghr
     - sed -i "s~delete-aws-es-incidents~github.com/devops-israel/delete-aws-es-incidents~g" main.go
     - glide install
     - glide update
-    - CGO_ENABLED=0 gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -os="linux darwin windows"
+    - gox -output "dist/delete-aws-es-incidents-{{.OS}}-{{.Arch}}" -os="linux darwin windows" -cgo 1 -build-toolchain
     - ghr -t $GITHUB_TOKEN -u devops-israel -r delete-aws-es-incidents --replace v$VERSION dist/
     - cp Dockerfile prod/
     - make build_inside_docker
