@@ -9,6 +9,7 @@ build:
   commands:
     - mkdir /drone/bin
     - mkdir -p prod
+    - cp Dockerfile prod/
     - mkdir -p dist
     - curl https://glide.sh/get | sh
     - go get github.com/mitchellh/gox
@@ -29,7 +30,7 @@ publish:
         - "$$BUILD_NUMBER"
         - "latest"
     force_tag: true
-    file: Dockerfile
+    file: prod/Dockerfile
     context: prod/
     build_args:
       - version=$VERSION
