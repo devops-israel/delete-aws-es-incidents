@@ -53,6 +53,14 @@ var RootCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
+		client, err := elastic.NewClient(
+			elastic.SetURL(esURL),
+			elastic.SetSniff(false),
+		)
+		if err != nil {
+			panic(err)
+		}
+
 		var wgm sync.WaitGroup
 		cron := cron.New()
 		cron.AddFunc("@hourly", func() { runCommand() })
