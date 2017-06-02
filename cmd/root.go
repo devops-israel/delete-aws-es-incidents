@@ -53,7 +53,7 @@ var RootCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		client, err := elastic.NewClient(
+		_, err := elastic.NewClient(
 			elastic.SetURL(esURL),
 			elastic.SetSniff(false),
 		)
