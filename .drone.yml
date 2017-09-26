@@ -14,7 +14,7 @@ pipeline:
       - curl https://glide.sh/get | sh
       - go get github.com/mitchellh/gox
       - go get github.com/tcnksm/ghr
-      # - sed -i "s~delete-aws-es-incidents~github.com/devops-israel/delete-aws-es-incidents~g" main.go
+      - sed -i "s~delete-aws-es-incidents~github.com/devops-israel/delete-aws-es-incidents~g" main.go
       - glide install
       - glide update
       - gox -osarch-list
