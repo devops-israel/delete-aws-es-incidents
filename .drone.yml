@@ -35,7 +35,7 @@ pipeline:
     daemon_off: true
     dockerfile: prod/Dockerfile
     context: prod/
-    secrets: [ docker_username, docker_password, docker_email ]
+    secrets: [ docker_username, docker_password ]
     when:
       branch: [master]
     volumes:
