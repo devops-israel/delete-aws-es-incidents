@@ -5,40 +5,39 @@
 package elastic
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v5/uritemplates"
 )
 
 // UpdateService updates a document in Elasticsearch.
-// See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-update.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/5.2/docs-update.html
 // for details.
 type UpdateService struct {
-	client           *Client
-	index            string
-	typ              string
-	id               string
-	routing          string
-	parent           string
-	script           *Script
-	fields           []string
-	version          *int64
-	versionType      string
-	retryOnConflict  *int
-	refresh          string
-	replicationType  string
-	consistencyLevel string
-	upsert           interface{}
-	scriptedUpsert   *bool
-	docAsUpsert      *bool
-	detectNoop       *bool
-	doc              interface{}
-	timeout          string
-	pretty           bool
+	client              *Client
+	index               string
+	typ                 string
+	id                  string
+	routing             string
+	parent              string
+	script              *Script
+	fields              []string
+	fsc                 *FetchSourceContext
+	version             *int64
+	versionType         string
+	retryOnConflict     *int
+	refresh             string
+	waitForActiveShards string
+	upsert              interface{}
+	scriptedUpsert      *bool
+	docAsUpsert         *bool
+	detectNoop          *bool
+	doc                 interface{}
+	timeout             string
+	pretty              bool
 }
 
 // NewUpdateService creates the service to update documents in Elasticsearch.
@@ -118,16 +117,12 @@ func (b *UpdateService) Refresh(refresh string) *UpdateService {
 	return b
 }
 
-// ReplicationType is one of "sync" or "async".
-func (b *UpdateService) ReplicationType(replicationType string) *UpdateService {
-	b.replicationType = replicationType
-	return b
-}
-
-// ConsistencyLevel is one of "one", "quorum", or "all".
-// It sets the write consistency setting for the update operation.
-func (b *UpdateService) ConsistencyLevel(consistencyLevel string) *UpdateService {
-	b.consistencyLevel = consistencyLevel
+// WaitForActiveShards sets the number of shard copies that must be active before
+// proceeding with the update operation. Defaults to 1, meaning the primary shard only.
+// Set to `all` for all shard copies, otherwise set to any non-negative value less than
+// or equal to the total number of copies for the shard (number of replicas + 1).
+func (b *UpdateService) WaitForActiveShards(waitForActiveShards string) *UpdateService {
+	b.waitForActiveShards = waitForActiveShards
 	return b
 }
 
@@ -178,6 +173,23 @@ func (b *UpdateService) Pretty(pretty bool) *UpdateService {
 	return b
 }
 
+// FetchSource asks Elasticsearch to return the updated _source in the response.
+func (s *UpdateService) FetchSource(fetchSource bool) *UpdateService {
+	if s.fsc == nil {
+		s.fsc = NewFetchSourceContext(fetchSource)
+	} else {
+		s.fsc.SetFetchSource(fetchSource)
+	}
+	return s
+}
+
+// FetchSourceContext indicates that _source should be returned in the response,
+// allowing wildcard patterns to be defined via FetchSourceContext.
+func (s *UpdateService) FetchSourceContext(fetchSourceContext *FetchSourceContext) *UpdateService {
+	s.fsc = fetchSourceContext
+	return s
+}
+
 // url returns the URL part of the document request.
 func (b *UpdateService) url() (string, url.Values, error) {
 	// Build url
@@ -208,11 +220,8 @@ func (b *UpdateService) url() (string, url.Values, error) {
 	if b.refresh != "" {
 		params.Set("refresh", b.refresh)
 	}
-	if b.replicationType != "" {
-		params.Set("replication", b.replicationType)
-	}
-	if b.consistencyLevel != "" {
-		params.Set("consistency", b.consistencyLevel)
+	if b.waitForActiveShards != "" {
+		params.Set("wait_for_active_shards", b.waitForActiveShards)
 	}
 	if len(b.fields) > 0 {
 		params.Set("fields", strings.Join(b.fields, ","))
@@ -259,6 +268,13 @@ func (b *UpdateService) body() (interface{}, error) {
 	if b.detectNoop != nil {
 		source["detect_noop"] = *b.detectNoop
 	}
+	if b.fsc != nil {
+		src, err := b.fsc.Source()
+		if err != nil {
+			return nil, err
+		}
+		source["_source"] = src
+	}
 
 	return source, nil
 }
@@ -292,10 +308,12 @@ func (b *UpdateService) Do(ctx context.Context) (*UpdateResponse, error) {
 
 // UpdateResponse is the result of updating a document in Elasticsearch.
 type UpdateResponse struct {
-	Index     string     `json:"_index"`
-	Type      string     `json:"_type"`
-	Id        string     `json:"_id"`
-	Version   int        `json:"_version"`
-	Created   bool       `json:"created"`
-	GetResult *GetResult `json:"get"`
+	Index         string      `json:"_index"`
+	Type          string      `json:"_type"`
+	Id            string      `json:"_id"`
+	Version       int         `json:"_version"`
+	Shards        *shardsInfo `json:"_shards"`
+	Result        string      `json:"result,omitempty"`
+	ForcedRefresh bool        `json:"forced_refresh,omitempty"`
+	GetResult     *GetResult  `json:"get,omitempty"`
 }

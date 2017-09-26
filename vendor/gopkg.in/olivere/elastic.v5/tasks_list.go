@@ -5,18 +5,17 @@
 package elastic
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v5/uritemplates"
 )
 
 // TasksListService retrieves the list of currently executing tasks
 // on one ore more nodes in the cluster. It is part of the Task Management API
-// documented at http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks-list.html.
+// documented at http://www.elastic.co/guide/en/elasticsearch/reference/5.2/tasks-list.html.
 //
 // It is supported as of Elasticsearch 2.3.0.
 type TasksListService struct {
@@ -205,11 +204,18 @@ type TaskInfo struct {
 	Id                 int64       `json:"id"` // the task id
 	Type               string      `json:"type"`
 	Action             string      `json:"action"`
-	Status             interface{} `json:"status"`
-	Description        interface{} `json:"description"`
+	Status             interface{} `json:"status"`      // has separate implementations of Task.Status in Java for reindexing, replication, and "RawTaskStatus"
+	Description        interface{} `json:"description"` // same as Status
 	StartTime          string      `json:"start_time"`
 	StartTimeInMillis  int64       `json:"start_time_in_millis"`
 	RunningTime        string      `json:"running_time"`
 	RunningTimeInNanos int64       `json:"running_time_in_nanos"`
+	Cancellable        bool        `json:"cancellable"`
 	ParentTaskId       string      `json:"parent_task_id"` // like "YxJnVYjwSBm_AUbzddTajQ:12356"
+}
+
+// StartTaskResult is used in cases where a task gets started asynchronously and
+// the operation simply returnes a TaskID to watch for via the Task Management API.
+type StartTaskResult struct {
+	TaskId string `json:"task"`
 }

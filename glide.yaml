@@ -2,5 +2,5 @@ package: .
 import:
   - package: github.com/spf13/cobra
   - package: gopkg.in/olivere/elastic.v5
-    version: 5
+    version: 5.0.47
   - package: github.com/robfig/cron

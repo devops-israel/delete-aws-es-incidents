@@ -6,11 +6,10 @@ package elastic
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
-
-	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v5/uritemplates"
 )
@@ -24,17 +23,20 @@ import (
 // reuse BulkService to send many batches. You do not have to create a new
 // BulkService for each batch.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/2.x/docs-bulk.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/5.2/docs-bulk.html
 // for more details.
 type BulkService struct {
 	client *Client
 
-	index    string
-	typ      string
-	requests []BulkableRequest
-	timeout  string
-	refresh  string
-	pretty   bool
+	index               string
+	typ                 string
+	requests            []BulkableRequest
+	pipeline            string
+	timeout             string
+	refresh             string
+	routing             string
+	waitForActiveShards string
+	pretty              bool
 
 	// estimated bulk size in bytes, up to the request index sizeInBytesCursor
 	sizeInBytes       int64
@@ -84,6 +86,28 @@ func (s *BulkService) Timeout(timeout string) *BulkService {
 // (no refresh related actions).
 func (s *BulkService) Refresh(refresh string) *BulkService {
 	s.refresh = refresh
+	return s
+}
+
+// Routing specifies the routing value.
+func (s *BulkService) Routing(routing string) *BulkService {
+	s.routing = routing
+	return s
+}
+
+// Pipeline specifies the pipeline id to preprocess incoming documents with.
+func (s *BulkService) Pipeline(pipeline string) *BulkService {
+	s.pipeline = pipeline
+	return s
+}
+
+// WaitForActiveShards sets the number of shard copies that must be active
+// before proceeding with the bulk operation. Defaults to 1, meaning the
+// primary shard only. Set to `all` for all shard copies, otherwise set to
+// any non-negative value less than or equal to the total number of copies
+// for the shard (number of replicas + 1).
+func (s *BulkService) WaitForActiveShards(waitForActiveShards string) *BulkService {
+	s.waitForActiveShards = waitForActiveShards
 	return s
 }
 
@@ -193,11 +217,20 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 	if s.pretty {
 		params.Set("pretty", fmt.Sprintf("%v", s.pretty))
 	}
+	if s.pipeline != "" {
+		params.Set("pipeline", s.pipeline)
+	}
 	if s.refresh != "" {
 		params.Set("refresh", s.refresh)
 	}
+	if s.routing != "" {
+		params.Set("routing", s.routing)
+	}
 	if s.timeout != "" {
 		params.Set("timeout", s.timeout)
+	}
+	if s.waitForActiveShards != "" {
+		params.Set("wait_for_active_shards", s.waitForActiveShards)
 	}
 
 	// Get response
@@ -267,13 +300,15 @@ type BulkResponse struct {
 
 // BulkResponseItem is the result of a single bulk request.
 type BulkResponseItem struct {
-	Index   string        `json:"_index,omitempty"`
-	Type    string        `json:"_type,omitempty"`
-	Id      string        `json:"_id,omitempty"`
-	Version int           `json:"_version,omitempty"`
-	Status  int           `json:"status,omitempty"`
-	Found   bool          `json:"found,omitempty"`
-	Error   *ErrorDetails `json:"error,omitempty"`
+	Index         string        `json:"_index,omitempty"`
+	Type          string        `json:"_type,omitempty"`
+	Id            string        `json:"_id,omitempty"`
+	Version       int64         `json:"_version,omitempty"`
+	Status        int           `json:"status,omitempty"`
+	Result        string        `json:"result,omitempty"`
+	ForcedRefresh bool          `json:"forced_refresh,omitempty"`
+	Found         bool          `json:"found,omitempty"`
+	Error         *ErrorDetails `json:"error,omitempty"`
 }
 
 // Indexed returns all bulk request results of "index" actions.

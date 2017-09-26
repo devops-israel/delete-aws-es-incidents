@@ -1,9 +1,5 @@
 # Elastic
 
-**WARNING** This branch contains a work-in-progress, preparing
-Elastic 5.0 to be in sync with Elasticsearch 5.0 and the
-[Elastic v5 Stack](https://www.elastic.co/v5).
-
 Elastic is an [Elasticsearch](http://www.elasticsearch.org/) client for the
 [Go](http://www.golang.org/) programming language.
 
@@ -24,7 +20,7 @@ Here's the version matrix:
 
 Elasticsearch version | Elastic version -| Package URL
 ----------------------|------------------|------------
-5.x                   | 5.0              | **not released yet** [`gopkg.in/olivere/elastic.v5`](https://gopkg.in/olivere/elastic.v5) ([source](https://github.com/olivere/elastic/tree/release-branch.v5) [doc](http://godoc.org/gopkg.in/olivere/elastic.v5))
+5.x                   | 5.0              | [`gopkg.in/olivere/elastic.v5`](https://gopkg.in/olivere/elastic.v5) ([source](https://github.com/olivere/elastic/tree/release-branch.v5) [doc](http://godoc.org/gopkg.in/olivere/elastic.v5))
 2.x                   | 3.0              | [`gopkg.in/olivere/elastic.v3`](https://gopkg.in/olivere/elastic.v3) ([source](https://github.com/olivere/elastic/tree/release-branch.v3) [doc](http://godoc.org/gopkg.in/olivere/elastic.v3))
 1.x                   | 2.0              | [`gopkg.in/olivere/elastic.v2`](https://gopkg.in/olivere/elastic.v2) ([source](https://github.com/olivere/elastic/tree/release-branch.v2) [doc](http://godoc.org/gopkg.in/olivere/elastic.v2))
 0.9-1.3               | 1.0              | [`gopkg.in/olivere/elastic.v1`](https://gopkg.in/olivere/elastic.v1) ([source](https://github.com/olivere/elastic/tree/release-branch.v1) [doc](http://godoc.org/gopkg.in/olivere/elastic.v1))
@@ -47,10 +43,10 @@ import elastic "gopkg.in/olivere/elastic.v5"
 
 ### Elastic 5.0
 
-Elastic 5.0 targets Elasticsearch 5.0.0 and later. Elasticsearch 5.0.0 is currently
-at beta 1, [released on 22nd September 2016](https://www.elastic.co/blog/elastic-stack-release-5-0-0-beta1).
+Elastic 5.0 targets Elasticsearch 5.0.0 and later. Elasticsearch 5.0.0 was
+[released on 26th October 2016](https://www.elastic.co/blog/elasticsearch-5-0-0-released).
 
-Notice that there are will be a lot of [breaking changes in Elasticsearch 5.0](https://www.elastic.co/guide/en/elasticsearch/reference/master/breaking-changes-5.0.html)
+Notice that there are will be a lot of [breaking changes in Elasticsearch 5.0](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking-changes-5.0.html)
 and we used this as an opportunity to [clean up and refactor Elastic](https://github.com/olivere/elastic/blob/release-branch.v5/CHANGELOG-5.0.md)
 as we did in the transition from Elastic 2.0 (for Elasticsearch 1.x) to Elastic 3.0 (for Elasticsearch 2.x).
 
@@ -59,6 +55,8 @@ Furthermore, the jump in version numbers will give us a chance to be in sync wit
 ### Elastic 3.0
 
 Elastic 3.0 targets Elasticsearch 2.x and is published via [`gopkg.in/olivere/elastic.v3`](https://gopkg.in/olivere/elastic.v3).
+
+Elastic 3.0 will only get critical bug fixes. You should update to a recent version.
 
 ### Elastic 2.0
 
@@ -88,7 +86,7 @@ to rewrite your application big time. More often than not it's renaming APIs
 and adding/removing features so that Elastic is in sync with Elasticsearch.
 
 Elastic has been used in production with the following Elasticsearch versions:
-0.90, 1.0-1.7, and 2.0-2.3.3. Furthermore, we use [Travis CI](https://travis-ci.org/)
+0.90, 1.0-1.7, and 2.0-2.4.1. Furthermore, we use [Travis CI](https://travis-ci.org/)
 to test Elastic with the most recent versions of Elasticsearch and Go.
 See the [.travis.yml](https://github.com/olivere/elastic/blob/master/.travis.yml)
 file for the exact matrix and [Travis](https://travis-ci.org/olivere/elastic)
@@ -109,97 +107,9 @@ The client connects to Elasticsearch on `http://127.0.0.1:9200` by default.
 You typically create one client for your app. Here's a complete example of
 creating a client, creating an index, adding a document, executing a search etc.
 
-```go
-// Create a client
-client, err := elastic.NewClient()
-if err != nil {
-    // Handle error
-}
+An example is available [here](https://olivere.github.io/elastic/)
 
-// Create an index
-_, err = client.CreateIndex("twitter").Do()
-if err != nil {
-    // Handle error
-    panic(err)
-}
-
-// Add a document to the index
-tweet := Tweet{User: "olivere", Message: "Take Five"}
-_, err = client.Index().
-    Index("twitter").
-    Type("tweet").
-    Id("1").
-    BodyJson(tweet).
-    Refresh(true).
-    Do()
-if err != nil {
-    // Handle error
-    panic(err)
-}
-
-// Search with a term query
-termQuery := elastic.NewTermQuery("user", "olivere")
-searchResult, err := client.Search().
-    Index("twitter").   // search in index "twitter"
-    Query(termQuery).   // specify the query
-    Sort("user", true). // sort by "user" field, ascending
-    From(0).Size(10).   // take documents 0-9
-    Pretty(true).       // pretty print request and response JSON
-    Do()                // execute
-if err != nil {
-    // Handle error
-    panic(err)
-}
-
-// searchResult is of type SearchResult and returns hits, suggestions,
-// and all kinds of other information from Elasticsearch.
-fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
-
-// Each is a convenience function that iterates over hits in a search result.
-// It makes sure you don't need to check for nil values in the response.
-// However, it ignores errors in serialization. If you want full control
-// over iterating the hits, see below.
-var ttyp Tweet
-for _, item := range searchResult.Each(reflect.TypeOf(ttyp)) {
-    if t, ok := item.(Tweet); ok {
-        fmt.Printf("Tweet by %s: %s\n", t.User, t.Message)
-    }
-}
-// TotalHits is another convenience function that works even when something goes wrong.
-fmt.Printf("Found a total of %d tweets\n", searchResult.TotalHits())
-
-// Here's how you iterate through results with full control over each step.
-if searchResult.Hits.TotalHits > 0 {
-    fmt.Printf("Found a total of %d tweets\n", searchResult.Hits.TotalHits)
-
-    // Iterate through results
-    for _, hit := range searchResult.Hits.Hits {
-        // hit.Index contains the name of the index
-
-        // Deserialize hit.Source into a Tweet (could also be just a map[string]interface{}).
-        var t Tweet
-        err := json.Unmarshal(*hit.Source, &t)
-        if err != nil {
-            // Deserialization failed
-        }
-
-        // Work with tweet
-        fmt.Printf("Tweet by %s: %s\n", t.User, t.Message)
-    }
-} else {
-    // No hits
-    fmt.Print("Found no tweets\n")
-}
-
-// Delete the index again
-_, err = client.DeleteIndex("twitter").Do()
-if err != nil {
-    // Handle error
-    panic(err)
-}
-```
-
-Here's a [link to a complete working example](https://gist.github.com/olivere/114347ff9d9cfdca7bdc0ecea8b82263).
+Here's a [link to a complete working example for v3](https://gist.github.com/olivere/114347ff9d9cfdca7bdc0ecea8b82263).
 
 See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 
@@ -236,7 +146,7 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 - [ ] Search Exists API
 - [ ] Validate API
 - [x] Explain API
-- [ ] Profile API
+- [x] Profile API
 - [x] Field Stats API
 
 ### Aggregations
@@ -280,16 +190,16 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
   - [x] Max Bucket
   - [x] Min Bucket
   - [x] Sum Bucket
-  - [ ] Stats Bucket
+  - [x] Stats Bucket
   - [ ] Extended Stats Bucket
-  - [ ] Percentiles Bucket
+  - [x] Percentiles Bucket
   - [x] Moving Average
   - [x] Cumulative Sum
   - [x] Bucket Script
   - [x] Bucket Selector
   - [x] Serial Differencing
-- [ ] Matrix Aggregations
-  - [ ] Matrix Stats
+- [x] Matrix Aggregations
+  - [x] Matrix Stats
 - [x] Aggregation Metadata
 
 ### Indices APIs
@@ -299,16 +209,16 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 - [x] Get Index
 - [x] Indices Exists
 - [x] Open / Close Index
-- [ ] Shrink Index
-- [ ] Rollover Index
+- [x] Shrink Index
+- [x] Rollover Index
 - [x] Put Mapping
 - [x] Get Mapping
-- [ ] Get Field Mapping
-- [ ] Types Exists
+- [x] Get Field Mapping
+- [x] Types Exists
 - [x] Index Aliases
 - [x] Update Indices Settings
 - [x] Get Settings
-- [ ] Analyze
+- [x] Analyze
 - [x] Index Templates
 - [ ] Shadow Replica Indices
 - [x] Indices Stats
@@ -391,7 +301,7 @@ The cat APIs are not implemented as of now. We think they are better suited for 
   - [x] Nested Query
   - [x] Has Child Query
   - [x] Has Parent Query
-  - [ ] Parent Id Query
+  - [x] Parent Id Query
 - Geo queries
   - [ ] GeoShape Query
   - [x] Geo Bounding Box Query
@@ -419,7 +329,13 @@ The cat APIs are not implemented as of now. We think they are better suited for 
 
 ### Modules
 
-- [ ] Snapshot and Restore
+- Snapshot and Restore
+  - [x] Repositories
+  - [ ] Snapshot
+  - [ ] Restore
+  - [ ] Snapshot status
+  - [ ] Monitoring snapshot/restore status
+  - [ ] Stopping currently running snapshot and restore
 
 ### Sorting
 
@@ -437,10 +353,6 @@ The `ClearScroll` API is implemented as well.
 A pattern for [efficiently scrolling in parallel](https://github.com/olivere/elastic/wiki/ScrollParallel)
 is described in the [Wiki](https://github.com/olivere/elastic/wiki).
 
-### Task Management
-
-TODO ...
-
 ## How to contribute
 
 Read [the contribution guidelines](https://github.com/olivere/elastic/blob/master/CONTRIBUTING.md).
@@ -454,8 +366,9 @@ and
 
 Elastic uses portions of the
 [uritemplates](https://github.com/jtacoma/uritemplates) library
-by Joshua Tacoma and
-[backoff](https://github.com/cenkalti/backoff) by Cenk Altı.
+by Joshua Tacoma,
+[backoff](https://github.com/cenkalti/backoff) by Cenk Altı and
+[leaktest](https://github.com/fortytw2/leaktest) by Ian Chiles.
 
 ## LICENSE
 

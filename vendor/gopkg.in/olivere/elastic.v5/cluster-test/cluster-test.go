@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -38,7 +39,7 @@ var (
 	errorlogfile  = flag.String("errorlog", "", "error log file")
 	infologfile   = flag.String("infolog", "", "info log file")
 	tracelogfile  = flag.String("tracelog", "", "trace log file")
-	retries       = flag.Int("retries", elastic.DefaultMaxRetries, "number of retries")
+	retries       = flag.Int("retries", 0, "number of retries")
 	sniff         = flag.Bool("sniff", elastic.DefaultSnifferEnabled, "enable or disable sniffer")
 	sniffer       = flag.Duration("sniffer", elastic.DefaultSnifferInterval, "sniffer interval")
 	healthcheck   = flag.Bool("healthcheck", elastic.DefaultHealthcheckEnabled, "enable or disable healthchecks")
@@ -226,13 +227,15 @@ func (t *TestCase) setup() error {
 	}
 	t.client = client
 
+	ctx := context.Background()
+
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := t.client.IndexExists(t.index).Do()
+	exists, err := t.client.IndexExists(t.index).Do(ctx)
 	if err != nil {
 		return err
 	}
 	if exists {
-		deleteIndex, err := t.client.DeleteIndex(t.index).Do()
+		deleteIndex, err := t.client.DeleteIndex(t.index).Do(ctx)
 		if err != nil {
 			return err
 		}
@@ -242,7 +245,7 @@ func (t *TestCase) setup() error {
 	}
 
 	// Create a new index.
-	createIndex, err := t.client.CreateIndex(t.index).Do()
+	createIndex, err := t.client.CreateIndex(t.index).Do(ctx)
 	if err != nil {
 		return err
 	}
@@ -257,7 +260,7 @@ func (t *TestCase) setup() error {
 		Type("tweet").
 		Id("1").
 		BodyJson(tweet1).
-		Do()
+		Do(ctx)
 	if err != nil {
 		return err
 	}
@@ -269,13 +272,13 @@ func (t *TestCase) setup() error {
 		Type("tweet").
 		Id("2").
 		BodyString(tweet2).
-		Do()
+		Do(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Flush to make sure the documents got written.
-	_, err = t.client.Flush().Index(t.index).Do()
+	_, err = t.client.Flush().Index(t.index).Do(ctx)
 	if err != nil {
 		return err
 	}
@@ -284,6 +287,8 @@ func (t *TestCase) setup() error {
 }
 
 func (t *TestCase) search() {
+	ctx := context.Background()
+
 	// Loop forever to check for connection issues
 	for {
 		// Get tweet with specified ID
@@ -291,7 +296,7 @@ func (t *TestCase) search() {
 			Index(t.index).
 			Type("tweet").
 			Id("1").
-			Do()
+			Do(ctx)
 		if err != nil {
 			//failf("Get failed: %v", err)
 			t.runCh <- RunInfo{Success: false}
@@ -311,7 +316,7 @@ func (t *TestCase) search() {
 			Sort("user", true).                             // sort by "user" field, ascending
 			From(0).Size(10).                               // take documents 0-9
 			Pretty(true).                                   // pretty print request and response JSON
-			Do()                                            // execute
+			Do(ctx)                                         // execute
 		if err != nil {
 			//failf("Search failed: %v\n", err)
 			t.runCh <- RunInfo{Success: false}

@@ -5,17 +5,16 @@
 package elastic
 
 import (
+	"context"
 	"errors"
 	"net/url"
-
-	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v5/uritemplates"
 )
 
 // IndicesCreateService creates a new index.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/5.2/indices-create-index.html
 // for details.
 type IndicesCreateService struct {
 	client        *Client
@@ -126,5 +125,6 @@ func (b *IndicesCreateService) Do(ctx context.Context) (*IndicesCreateResult, er
 
 // IndicesCreateResult is the outcome of creating a new index.
 type IndicesCreateResult struct {
-	Acknowledged bool `json:"acknowledged"`
+	Acknowledged       bool `json:"acknowledged"`
+	ShardsAcknowledged bool `json:"shards_acknowledged"`
 }

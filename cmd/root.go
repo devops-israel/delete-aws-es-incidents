@@ -53,7 +53,7 @@ var RootCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		_, err := elastic.NewClient(
+		client, err := elastic.NewClient(
 			elastic.SetURL(esURL),
 			elastic.SetSniff(false),
 		)
@@ -61,6 +61,13 @@ var RootCmd = &cobra.Command{
 			panic(err)
 		}
 
+		esversion, err := client.ElasticsearchVersion(esURL)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Elasticsearch version %s\n", esversion)
+
+		runCommand()
 		var wgm sync.WaitGroup
 		cron := cron.New()
 		cron.AddFunc("@hourly", func() { runCommand() })

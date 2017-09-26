@@ -5,10 +5,9 @@
 package elastic
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
-
-	"golang.org/x/net/context"
 )
 
 func TestHighlighterField(t *testing.T) {
@@ -113,6 +112,23 @@ func TestHighlighterWithExplicitFieldOrder(t *testing.T) {
 	}
 	got := string(data)
 	expected := `{"fields":[{"grade":{"fragment_size":2}},{"color":{"fragment_size":2,"number_of_fragments":1}}]}`
+	if got != expected {
+		t.Errorf("expected\n%s\n,got:\n%s", expected, got)
+	}
+}
+
+func TestHighlightWithBoundaryChars(t *testing.T) {
+	builder := NewHighlight().BoundaryChars(" \t\r")
+	src, err := builder.Source()
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(src)
+	if err != nil {
+		t.Fatalf("marshaling to JSON failed: %v", err)
+	}
+	got := string(data)
+	expected := `{"boundary_chars":" \t\r"}`
 	if got != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, got)
 	}
