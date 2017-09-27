@@ -31,6 +31,7 @@ Flags:
   -e, --es-url string            Elasticsearch URL, eg. https://path-to-es.aws.com/
   -h, --help                     help for delete-aws-es-incidents
   -d, --older-than-in-days int   delete incidents older then in days (default 14)
+  -p, --prefix string            prefix for indexs. default is 'logstash-' (default "logstash-")
 
 Use "delete-aws-es-incidents [command] --help" for more information about a command.
 ```
