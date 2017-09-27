@@ -91,7 +91,7 @@ func Execute() {
 func init() {
 	RootCmd.Flags().IntVarP(&olderThanInDays, "older-than-in-days", "d", 14, "delete incidents older then in days")
 	RootCmd.Flags().StringVarP(&esURL, "es-url", "e", "", "Elasticsearch URL, eg. https://path-to-es.aws.com/")
-	RootCmd.Flags().StringVarP(&prefix, "prefix", "p", "", "prefix for indexs. eg. logstash-")
+	RootCmd.Flags().StringVarP(&prefix, "prefix", "p", "logstash-", "prefix for indexs. default is 'logstash-'")
 }
 
 func runCommand() {
@@ -111,19 +111,19 @@ func runCommand() {
 	}
 
 	for _, indexName := range indexNames {
-			date := strings.TrimPrefix(indexName, prefix)
-			dateArr := strings.Split(date, ".")
-			nowTime := time.Now()
-			indexYear, _ := strconv.Atoi(dateArr[0])
-			indexMonth, _ := strconv.Atoi(dateArr[1])
-			indexDay, _ := strconv.Atoi(dateArr[2])
-			incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
-			if daysDiff(nowTime, incidentTime) > olderThanInDays {
-				wg.Add(1)
-				go deleteIncident(ctx, client, indexName)
-			}
+		date := strings.TrimPrefix(indexName, prefix)
+		dateArr := strings.Split(date, ".")
+		nowTime := time.Now()
+		indexYear, _ := strconv.Atoi(dateArr[0])
+		indexMonth, _ := strconv.Atoi(dateArr[1])
+		indexDay, _ := strconv.Atoi(dateArr[2])
+		incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
+		if daysDiff(nowTime, incidentTime) > olderThanInDays {
+			wg.Add(1)
+			go deleteIncident(ctx, client, indexName)
 		}
-	
+	}
+
 
 	wg.Wait()
 	println("Ending deleting incidents run...")
