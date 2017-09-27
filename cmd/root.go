@@ -111,16 +111,18 @@ func runCommand() {
 	}
 
 	for _, indexName := range indexNames {
-		date := strings.TrimPrefix(indexName, prefix)
-		dateArr := strings.Split(date, ".")
-		nowTime := time.Now()
-		indexYear, _ := strconv.Atoi(dateArr[0])
-		indexMonth, _ := strconv.Atoi(dateArr[1])
-		indexDay, _ := strconv.Atoi(dateArr[2])
-		incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
-		if daysDiff(nowTime, incidentTime) > olderThanInDays {
-			wg.Add(1)
-			go deleteIncident(ctx, client, indexName)
+		if strings.HasPrefix(indexName, prefix) {
+			date := strings.TrimPrefix(indexName, prefix)
+			dateArr := strings.Split(date, ".")
+			nowTime := time.Now()
+			indexYear, _ := strconv.Atoi(dateArr[0])
+			indexMonth, _ := strconv.Atoi(dateArr[1])
+			indexDay, _ := strconv.Atoi(dateArr[2])
+			incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
+			if daysDiff(nowTime, incidentTime) > olderThanInDays {
+				wg.Add(1)
+				go deleteIncident(ctx, client, indexName)
+			}
 		}
 	}
 
