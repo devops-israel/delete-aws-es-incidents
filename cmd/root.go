@@ -38,6 +38,7 @@ import (
 var (
 	olderThanInDays int
 	esURL           string
+	prefix          string
 	wg              sync.WaitGroup
 	ctx             context.Context
 )
@@ -90,6 +91,7 @@ func Execute() {
 func init() {
 	RootCmd.Flags().IntVarP(&olderThanInDays, "older-than-in-days", "d", 14, "delete incidents older then in days")
 	RootCmd.Flags().StringVarP(&esURL, "es-url", "e", "", "Elasticsearch URL, eg. https://path-to-es.aws.com/")
+	RootCmd.Flags().StringVarP(&prefix, "prefix", "p", "", "prefix for indexs. eg. logstash-")
 }
 
 func runCommand() {
@@ -109,8 +111,7 @@ func runCommand() {
 	}
 
 	for _, indexName := range indexNames {
-		if strings.HasPrefix(indexName, "logstash") {
-			date := strings.TrimPrefix(indexName, "logstash-")
+			date := strings.TrimPrefix(indexName, prefix)
 			dateArr := strings.Split(date, ".")
 			nowTime := time.Now()
 			indexYear, _ := strconv.Atoi(dateArr[0])
@@ -122,7 +123,7 @@ func runCommand() {
 				go deleteIncident(ctx, client, indexName)
 			}
 		}
-	}
+	
 
 	wg.Wait()
 	println("Ending deleting incidents run...")
