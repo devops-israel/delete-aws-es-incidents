@@ -135,7 +135,7 @@ func runCommand() {
 }
 
 func deleteIncident(ctx context.Context, client *elastic.Client, indexName string) {
-	deleteIndex, err := client.DeleteIndex(indexName).Do(ctx)
+	_, err := client.DeleteIndex(indexName).Do(ctx)
 	if err != nil {
 		fmt.Printf("Error deleting index %s\n", indexName)
 	}
