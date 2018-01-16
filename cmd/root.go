@@ -39,7 +39,6 @@ var (
 	olderThanInDays int
 	esURL           string
 	prefixes        string
-	wg              sync.WaitGroup
 	ctx             context.Context
 )
 
@@ -121,30 +120,28 @@ func runCommand() {
 				indexMonth, _ := strconv.Atoi(dateArr[1])
 				indexDay, _ := strconv.Atoi(dateArr[2])
 				incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
+				fmt.Printf("daysDiff %d\n", daysDiff(nowTime, incidentTime))
 				if daysDiff(nowTime, incidentTime) > olderThanInDays {
-					// wg.Add(1)
-					deleteIncident(ctx, client, indexName)
+					fmt.Printf("About to delete index %s\n", indexName)
+					if (prefix == "logstash-"){
+						deleteIncident(ctx, client, indexName)
+					}
 				}
 			}
 		}
 	}
-
-
-	// wg.Wait()
 	println("Ending deleting incidents run...")
 }
 
 func deleteIncident(ctx context.Context, client *elastic.Client, indexName string) {
-	_, err := client.DeleteIndex(indexName).Do(ctx)
+	deleteIndex, err := client.DeleteIndex(indexName).Do(ctx)
 	if err != nil {
 		fmt.Printf("Error deleting index %s\n", indexName)
 	}
 
-	// if deleteIndex.Acknowledged {
+	if deleteIndex.Acknowledged {
 		fmt.Printf("index %s deleted.\n", indexName)
-	// }
-
-	// defer wg.Done()
+	}
 }
 
 func lastDayOfYear(t time.Time) time.Time {
