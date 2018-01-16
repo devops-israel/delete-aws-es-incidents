@@ -117,18 +117,11 @@ func runCommand() {
 				dateArr := strings.Split(date, ".")
 				nowTime := time.Now()
 				indexYear, _ := strconv.Atoi(dateArr[0])
-				fmt.Printf("indexYear %d\n", indexYear)
 				indexMonth, _ := strconv.Atoi(dateArr[1])
-				fmt.Printf("indexMonth %d\n", indexMonth)
 				indexDay, _ := strconv.Atoi(dateArr[2])
-				fmt.Printf("indexDay %d\n", indexDay)
 				incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
-				fmt.Printf("incidentTime %s\n", incidentTime.String())
-				fmt.Printf("daysDiff %d\n", daysDiff(nowTime, incidentTime))
 				if daysDiff(nowTime, incidentTime) > olderThanInDays {
-					fmt.Printf("About to delete index %s\n", indexName)
-					fmt.Printf("Prefix %s\n", prefix)
-					// deleteIncident(ctx, client, indexName)
+					deleteIncident(ctx, client, indexName)
 				}
 			}
 		}
