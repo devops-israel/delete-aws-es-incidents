@@ -122,15 +122,15 @@ func runCommand() {
 				indexDay, _ := strconv.Atoi(dateArr[2])
 				incidentTime := time.Date(indexYear, time.Month(indexMonth), indexDay, 0, 0, 0, 0, nowTime.Location())
 				if daysDiff(nowTime, incidentTime) > olderThanInDays {
-					wg.Add(1)
-					go deleteIncident(ctx, client, indexName)
+					// wg.Add(1)
+					deleteIncident(ctx, client, indexName)
 				}
 			}
 		}
 	}
 
 
-	wg.Wait()
+	// wg.Wait()
 	println("Ending deleting incidents run...")
 }
 
@@ -144,7 +144,7 @@ func deleteIncident(ctx context.Context, client *elastic.Client, indexName strin
 		fmt.Printf("index %s deleted.\n", indexName)
 	// }
 
-	defer wg.Done()
+	// defer wg.Done()
 }
 
 func lastDayOfYear(t time.Time) time.Time {
