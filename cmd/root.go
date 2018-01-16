@@ -140,9 +140,9 @@ func deleteIncident(ctx context.Context, client *elastic.Client, indexName strin
 		fmt.Printf("Error deleting index %s\n", indexName)
 	}
 
-	if deleteIndex.Acknowledged {
+	// if deleteIndex.Acknowledged {
 		fmt.Printf("index %s deleted.\n", indexName)
-	}
+	// }
 
 	defer wg.Done()
 }
